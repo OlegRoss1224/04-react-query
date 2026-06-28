@@ -27,7 +27,10 @@ export default function App() {
   const [page, setPage] = useState<number>(1);
   const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
 
-  const { data, isLoading, isError } = useQuery<TmdbResponse, Error>({
+  const { data, isLoading, isError, isSuccess, isFetching } = useQuery<
+    TmdbResponse,
+    Error
+  >({
     queryKey: ["movies", query, page],
     queryFn: () => fetchMovies(query, page),
     enabled: Boolean(query),
@@ -39,14 +42,14 @@ export default function App() {
   const totalPages = data?.total_pages || 0;
 
   useEffect(() => {
-    if (!query || isLoading) return;
+    if (!query || isLoading || isFetching) return;
 
     if (isError) {
       toast.error("Something went wrong. Please try again.");
     } else if (movies.length === 0) {
       toast.error("No movies found for your request.");
     }
-  }, [isError, movies, query, isLoading]);
+  }, [isError, isSuccess, movies, query, isLoading, isFetching]);
 
   const handleSearchSubmit = (newQuery: string) => {
     setQuery(newQuery);
@@ -73,8 +76,12 @@ export default function App() {
 
       {isLoading && <Loader />}
 
-      {!isError && !isLoading && query && movies.length > 0 && (
-        <>
+      {isSuccess && query && movies.length > 0 && (
+        <div
+          style={{ opacity: isFetching ? 0.7 : 1, transition: "opacity 0.2s" }}
+        >
+          {isFetching && <p className={css.updatingText}>Оновлення даних...</p>}
+
           {totalPages > 1 && (
             <ReactPaginate
               pageCount={totalPages}
@@ -89,11 +96,12 @@ export default function App() {
             />
           )}
           <MovieGrid movies={movies} onSelect={setSelectedMovie} />
-        </>
+        </div>
       )}
 
-      <MovieModal movie={selectedMovie} onClose={handleCloseModal} />
-
+      {selectedMovie && (
+        <MovieModal movie={selectedMovie} onClose={handleCloseModal} />
+      )}
       <Toaster position="top-right" reverseOrder={false} />
     </div>
   );
