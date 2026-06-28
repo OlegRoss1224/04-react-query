@@ -60,14 +60,6 @@ export default function App() {
     setSelectedMovie(null);
   };
 
-  if (query && !isLoading && !isError && movies.length === 0) {
-    toast.error("No movies found for your request.", { id: "no-movies" });
-  }
-
-  if (isError) {
-    toast.error("Something went wrong. Please try again.", { id: "error" });
-  }
-
   return (
     <div>
       <SearchBar onSubmit={handleSearchSubmit} />
