@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { ComponentType } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Toaster, toast } from "react-hot-toast";
@@ -37,6 +37,16 @@ export default function App() {
 
   const movies = data?.results || [];
   const totalPages = data?.total_pages || 0;
+
+  useEffect(() => {
+    if (!query || isLoading) return;
+
+    if (isError) {
+      toast.error("Something went wrong. Please try again.");
+    } else if (movies.length === 0) {
+      toast.error("No movies found for your request.");
+    }
+  }, [isError, movies, query, isLoading]);
 
   const handleSearchSubmit = (newQuery: string) => {
     setQuery(newQuery);
